@@ -1,8 +1,18 @@
 import wx
+import wx.adv
 import prayer_time
+import threading
+from playsound import playsound
+
 
 MAXWIDTH = 350
 MAXHEIGTH = 500
+    
+class TT(threading.Thread): 
+    def __init__(self, thread_name, thread_ID): 
+        threading.Thread.__init__(self) 
+        self.thread_name = thread_name 
+        self.thread_ID = thread_ID 
 
 class TransparentText(wx.StaticText):
     def __init__(self, parent, id=wx.ID_ANY, label='', pos=wx.DefaultPosition,
@@ -91,14 +101,52 @@ class PrayerTime(wx.Panel):
         dc.Clear()
         bmp = wx.Bitmap("david-billings-EwcvNe53bdM-unsplash1.jpg")
         dc.DrawBitmap(bmp, 0, 0)
-        
+
+class MainFrame(wx.Frame):
+    def __init__(self, parent=None,title="",size=wx.DefaultSize,style=wx.DEFAULT_FRAME_STYLE):
+        wx.Frame.__init__(self, parent=parent,title=title,size=size,style=style)
+        self.taskBarIcon = wx.adv.TaskBarIcon()
+        if self.taskBarIcon.IsAvailable() is False:
+            raise SystemExit("Cannot access system tray")
+        bitmap = wx.ArtProvider.GetBitmap(wx.ART_TIP, wx.ART_CMN_DIALOG, (32,32))
+        self.taskBarIcon.SetIcon(wx.Icon(bitmap), "IPray")
+        # Create timer and bind events
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Bind(wx.EVT_ICONIZE, self.OnMinimize)
+        self.taskBarIcon.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, self.OnShowFrame)
+
+    def OnMinimize(self, event):
+        if self.IsIconized() is True:
+            self.Hide()
+
+    def OnShowFrame(self, event):
+        # Restore Frame if it is minimized.
+        if self.IsIconized() is True:
+            self.Restore()
+        # Show MainFrame if it is not shown already.
+        if self.IsShown() is True:
+            # Frame is already visible. Flash it.
+            self.RequestUserAttention()
+            self.SetFocus()
+        else:
+            self.Show()
+
+    def OnClose(self, event):
+        # Frame closed. Destroy taskbar icon and stop timer.
+        event.Skip(True)
+        self.taskBarIcon.Destroy()
+        if self.timer.IsRunning() is True:
+            self.timer.Stop()
+
 
 app = wx.App(False)
-frame = wx.Frame(None, title="IPRAY",size=(MAXWIDTH,MAXHEIGTH),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX|wx.MINIMIZE_BOX)
+frame = MainFrame(None, title="IPRAY",size=(MAXWIDTH,MAXHEIGTH),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX|wx.MINIMIZE_BOX)
 frame.SetSizeHints((MAXWIDTH,MAXHEIGTH),maxSize=(MAXWIDTH,MAXHEIGTH))
 nb = wx.Notebook(frame)
-
 nb.AddPage(HijriyahDate(nb),"Hijriyah Time")
 nb.AddPage(PrayerTime(nb),"Pray Time")
-frame.Show()
+thread2 = TT(frame.Show(),2000)
+thread = TT(playsound("assets/mecca_56_22.mp3",False),1000)
+thread2.start()
 app.MainLoop()
