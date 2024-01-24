@@ -1,14 +1,18 @@
+from ast import arg
+from concurrent.futures import thread
 import wx
 import wx.adv
 import prayer_time
 import threading
+from audio import Audio
+import keyboard
 from playsound import playsound
 
 
 MAXWIDTH = 350
 MAXHEIGTH = 500
     
-class TT(threading.Thread): 
+class Thread(threading.Thread): 
     def __init__(self, thread_name, thread_ID): 
         threading.Thread.__init__(self) 
         self.thread_name = thread_name 
@@ -102,9 +106,10 @@ class PrayerTime(wx.Panel):
         bmp = wx.Bitmap("david-billings-EwcvNe53bdM-unsplash1.jpg")
         dc.DrawBitmap(bmp, 0, 0)
 
-class MainFrame(wx.Frame):
+class MainFrame(wx.Frame,threading.Thread):
     def __init__(self, parent=None,title="",size=wx.DefaultSize,style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent=parent,title=title,size=size,style=style)
+        threading.Thread.__init__(self)
         self.taskBarIcon = wx.adv.TaskBarIcon()
         if self.taskBarIcon.IsAvailable() is False:
             raise SystemExit("Cannot access system tray")
@@ -139,14 +144,15 @@ class MainFrame(wx.Frame):
         if self.timer.IsRunning() is True:
             self.timer.Stop()
 
-
-app = wx.App(False)
-frame = MainFrame(None, title="IPRAY",size=(MAXWIDTH,MAXHEIGTH),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX|wx.MINIMIZE_BOX)
-frame.SetSizeHints((MAXWIDTH,MAXHEIGTH),maxSize=(MAXWIDTH,MAXHEIGTH))
-nb = wx.Notebook(frame)
-nb.AddPage(HijriyahDate(nb),"Hijriyah Time")
-nb.AddPage(PrayerTime(nb),"Pray Time")
-thread2 = TT(frame.Show(),2000)
-thread = TT(playsound("assets/mecca_56_22.mp3",False),1000)
-thread2.start()
-app.MainLoop()
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MainFrame(None, title="IPRAY",size=(MAXWIDTH,MAXHEIGTH),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX|wx.MINIMIZE_BOX)
+    frame.SetSizeHints((MAXWIDTH,MAXHEIGTH),maxSize=(MAXWIDTH,MAXHEIGTH))
+    nb = wx.Notebook(frame)
+    nb.AddPage(HijriyahDate(nb),"Hijriyah Time")
+    nb.AddPage(PrayerTime(nb),"Pray Time")
+    AdzanSound = Audio('assets/mecca_56_22.wav')
+    frame.Show()
+    frame.start()
+    frame.join()
+    app.MainLoop()
