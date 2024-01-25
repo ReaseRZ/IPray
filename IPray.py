@@ -1,13 +1,14 @@
 from ast import arg
 from concurrent.futures import thread
+import datetime
+from turtle import mainloop
+from typing import Self
 import wx
 import wx.adv
 import prayer_time
 import threading
 from audio import Audio
 import keyboard
-from playsound import playsound
-
 
 MAXWIDTH = 350
 MAXHEIGTH = 500
@@ -110,6 +111,7 @@ class MainFrame(wx.Frame,threading.Thread):
     def __init__(self, parent=None,title="",size=wx.DefaultSize,style=wx.DEFAULT_FRAME_STYLE):
         wx.Frame.__init__(self, parent=parent,title=title,size=size,style=style)
         threading.Thread.__init__(self)
+        self.audio = None
         self.taskBarIcon = wx.adv.TaskBarIcon()
         if self.taskBarIcon.IsAvailable() is False:
             raise SystemExit("Cannot access system tray")
@@ -120,6 +122,16 @@ class MainFrame(wx.Frame,threading.Thread):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_ICONIZE, self.OnMinimize)
         self.taskBarIcon.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, self.OnShowFrame)
+    
+    def setAudio(self, Audio):
+        self.audio = Audio
+
+    def CheckTimePrayer(self):
+        if datetime.datetime.today().minute == 41:
+            print("Yes")
+
+    def run(self):
+        keyboard.on_press_key('space',callback=self.audio.StopAudio)
 
     def OnMinimize(self, event):
         if self.IsIconized() is True:
@@ -143,6 +155,7 @@ class MainFrame(wx.Frame,threading.Thread):
         self.taskBarIcon.Destroy()
         if self.timer.IsRunning() is True:
             self.timer.Stop()
+    
 
 if __name__ == '__main__':
     app = wx.App()
@@ -152,7 +165,10 @@ if __name__ == '__main__':
     nb.AddPage(HijriyahDate(nb),"Hijriyah Time")
     nb.AddPage(PrayerTime(nb),"Pray Time")
     AdzanSound = Audio('assets/mecca_56_22.wav')
-    frame.Show()
+    frame.setAudio(AdzanSound)
+    AdzanSound.start()
     frame.start()
-    frame.join()
-    app.MainLoop()
+    frame.Show()
+    mainLoop = threading.Thread(target=app.MainLoop())
+    mainLoop.start()
+    mainLoop.join()
