@@ -2,7 +2,7 @@ import requests
 from datetime import date
 
 today = date.today()
-response = requests.get("http://api.aladhan.com/v1/calendar/{}/{}?latitude=-7.244&longitude=112.585&method=3".format(today.year,today.month))
+response = requests.get("http://api.aladhan.com/v1/calendar/{}/{}?latitude=-7.244&longitude=112.585&method=5".format(today.year,today.month))
 data = response.json()
 
 #get data API prayer time

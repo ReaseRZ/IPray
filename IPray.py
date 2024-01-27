@@ -8,6 +8,14 @@ import pyaudio
 import time
 import re
 
+city = None
+Location = None
+
+def AboutWindows(windows:sg.Window):
+    layout = [[sg.Text("Remainder prayer for someone that got deep focus on the computer")],
+              [sg.Text("Created with love By ResZ")]]
+    event,values = sg.Window('About',layout).read(close=True)
+
 def AdzanSoundThread(tray, adzan):
     prayerTime = pt.pray_times()
     for name_time,time in prayerTime:
@@ -33,13 +41,15 @@ def AdzanSoundThread(tray, adzan):
             adzan[0]=True
     
 
-
+CityList = [['Surabaya','Semarang','Jakarta'],['London'],['Berlin']]
+CountryList = ['Indonesia','United Kingdom','Germany']
 def main():
     sg.theme("DarkAmber")
     menu = ['',['Author','About','Exit']]
     tooltip = 'IPray'
     #Layout in Windows's Frame
-    layout = [[sg.Table(pt.pray_times(),headings=['Name Time','Time'])]]
+    layout = [[sg.Table(pt.pray_times(),headings=['Name Time','Time'])],
+              [sg.Combo(CountryList,enable_events=True,readonly=True,key='country')]]
     #Window Class Instance
     window = sg.Window('IPray',layout,finalize=True,enable_close_attempted_event=True)
     window.hide()
@@ -62,13 +72,16 @@ def main():
 
         if event == sg.WIN_CLOSE_ATTEMPTED_EVENT:
             window.hide()
+            tray.show_message('IPray','IPray is launching in the background')
             tray.show_icon()
-
-        elif event == sg.EVENT_SYSTEM_TRAY_ICON_DOUBLE_CLICKED:
+        if event == 'Author':
+            continue
+        if event == 'About':
+            AboutWindows(window)
+        if event == sg.EVENT_SYSTEM_TRAY_ICON_DOUBLE_CLICKED:
             window.un_hide()
             window.bring_to_front()
         window.refresh()
-
     tray.close()
     window.close()
 
