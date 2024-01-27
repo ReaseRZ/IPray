@@ -1,20 +1,25 @@
-from socket import timeout
 import PySimpleGUI as sg
 import prayer_time as pt
 from psgtray import SystemTray
-from datetime import date, datetime
+from datetime import datetime
 import wave
 import pyaudio
-import time
 import re
 
 city = None
 Location = None
 
+def Author(windows:sg.Window):
+    layout = [[sg.Text("Github : ReaseRZ | CReszen")],
+              [sg.Text("LinkedIn : Reggy Samius")],
+              [sg.Text("Codewars : CReszen")],
+              [sg.Text("Email me on : creszen.cpp@outlook.com")]]
+    event,values = sg.Window('Author',layout,element_justification='center').read(close=True)
+
 def AboutWindows(windows:sg.Window):
     layout = [[sg.Text("Remainder prayer for someone that got deep focus on the computer")],
-              [sg.Text("Created with love By ResZ")]]
-    event,values = sg.Window('About',layout).read(close=True)
+              [sg.Text("Created with love By ResZ ©2024")]]
+    event,values = sg.Window('About',layout,element_justification='center').read(close=True)
 
 def AdzanSoundThread(tray, adzan):
     prayerTime = pt.pray_times()
@@ -22,7 +27,7 @@ def AdzanSoundThread(tray, adzan):
         tempTime = time
         FinalizeTime = re.sub("[(WIB)]","",tempTime)
         SeparatorTime = FinalizeTime.split(':')
-        if datetime.today().minute == SeparatorTime[1] and datetime.today().hour == SeparatorTime[0]:
+        if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]):
             adzan[0] = False
             tray.show_message('Time for praying : {}'.format(name_time),'Lets go to pray, hurry up, Adzan has begun')
             wf = wave.open('assets/mecca_56_22.wav')
@@ -31,7 +36,7 @@ def AdzanSoundThread(tray, adzan):
                             channels=wf.getnchannels(),
                             rate=wf.getframerate(),
                             output=True)
-            # Read data in chunks
+            # Read data in audio
             data = wf.readframes(1024)
 
             # Play the sound by writing the audio data to the stream
@@ -75,7 +80,7 @@ def main():
             tray.show_message('IPray','IPray is launching in the background')
             tray.show_icon()
         if event == 'Author':
-            continue
+            Author(window)
         if event == 'About':
             AboutWindows(window)
         if event == sg.EVENT_SYSTEM_TRAY_ICON_DOUBLE_CLICKED:
