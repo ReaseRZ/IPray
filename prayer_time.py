@@ -14,10 +14,7 @@ def get_data_pray_time():
 def pray_times():
     pray_times_data = []
     for name_time,time in get_data_pray_time():
-        pray_local_array = []
-        pray_local_array.append(name_time)
-        pray_local_array.append(time)
-        pray_times_data.append(pray_local_array)
+        pray_times_data.append([name_time,time])
     return pray_times_data
 
 def hijri_date():
