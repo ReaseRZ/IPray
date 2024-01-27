@@ -21,4 +21,4 @@ Prayer reminder for moslem that avoid smartphone use cause the distraction is to
 then run it with
 `py IPray.py`
 
-If you have any advice or idea to my project, you can email me on : `creszen.cpp@outlook.com'
+If you have any advice or idea to my project, you can email me on : `creszen.cpp@outlook.com`
