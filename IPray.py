@@ -21,6 +21,12 @@ def AboutWindows(windows:sg.Window):
               [sg.Text("Created with love By ResZ ©2024")]]
     event,values = sg.Window('About',layout,element_justification='center').read(close=True)
 
+def StillInDev(windows:sg.Window):
+    layout = [[sg.Text("Sorry This feature is still in development")],
+              [sg.Text("Current time is Indonesian prayer time only")],
+              [sg.Text("Be pleasure to wait this project, i'll work as fast as i can")]]
+    event,values = sg.Window('Warning !!!',layout,element_justification='center').read(close=True)
+
 def AdzanSoundThread(tray, adzan):
     prayerTime = pt.pray_times()
     for name_time,time in prayerTime:
@@ -36,6 +42,7 @@ def AdzanSoundThread(tray, adzan):
                             channels=wf.getnchannels(),
                             rate=wf.getframerate(),
                             output=True)
+            
             # Read data in audio
             data = wf.readframes(1024)
 
@@ -54,7 +61,8 @@ def main():
     tooltip = 'IPray'
     #Layout in Windows's Frame
     layout = [[sg.Table(pt.pray_times(),headings=['Name Time','Time'])],
-              [sg.Combo(CountryList,enable_events=True,readonly=True,key='country')]]
+              [sg.Combo(CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
+              [sg.Button('Sync',enable_events=True,key='Sync')]]
     #Window Class Instance
     window = sg.Window('IPray',layout,finalize=True,enable_close_attempted_event=True)
     window.hide()
@@ -75,6 +83,17 @@ def main():
         if event == 'Exit':
             break
 
+        if event == 'Sync':
+            StillInDev(window)
+
+        if event =='country':
+            window['city'].update(disabled=False)
+            if values['country'] == 'Indonesia':
+                window['city'].update(values=CityList[0])
+            elif values['country'] == 'United Kingdom':
+                window['city'].update(values=CityList[1])
+            elif values['country'] == 'Germany':
+                window['city'].update(values=CityList[2])
         if event == sg.WIN_CLOSE_ATTEMPTED_EVENT:
             window.hide()
             tray.show_message('IPray','IPray is launching in the background')
