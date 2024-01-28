@@ -9,6 +9,8 @@ Prayer reminder for moslem that avoid smartphone use cause the distraction is to
 ![image](https://github.com/ReaseRZ/IPray/assets/88366703/62f299be-3d00-42f3-b570-889a46909df4)
 ## Minimalist GUI (Still In Development)
 ![image](https://github.com/ReaseRZ/IPray/assets/88366703/45610621-36fb-48e8-8344-2d359bc5b7a0)
+## Don't forget, close the program properly
+![image](https://github.com/ReaseRZ/IPray/assets/88366703/a6fa3c7b-1330-486c-87de-6a160b0ec1e4)
 # How To Run
 ### First clone my repository cause i don't make any .exe file format yet
 `git clone https://github.com/ReaseRZ/IPray.git`
