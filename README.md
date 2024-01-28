@@ -26,7 +26,7 @@ First clone my repository
 `py IPray.py`
 # .exe format file
 You can download it throught this link, and use it normally on your PC
-`https://github.com/ReaseRZ/IPray/releases/tag/v1.0.0`
+[IPray v1.0.0](https://github.com/ReaseRZ/IPray/releases/tag/v1.0.0)
 
 
 If you have any advice or idea to my project, you can email me on : `creszen.cpp@outlook.com`
