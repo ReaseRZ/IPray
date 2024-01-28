@@ -26,7 +26,7 @@ def Sync(window:sg.Window,values,ScannerPrayTime):
     country=str(values['country'])
     ScannerPrayTime=pt.pray_times(city,country)
     window['-table-'].update(values=ScannerPrayTime)
-    return ScannerPrayTime
+    return (ScannerPrayTime,city,country)
     
 def AdzanSoundThread(tray, adzan, ScannerPrayTime):
     prayerTime = ScannerPrayTime
@@ -51,14 +51,61 @@ def AdzanSoundThread(tray, adzan, ScannerPrayTime):
                 stream.write(data)
                 data = wf.readframes(1024)
             adzan[0]=True
-    
+
+def WarningPage():
+    LayoutWarning = [[sg.Text("Please enter format properly")]]
+    warningWindow = sg.Window('Warning',LayoutWarning,finalize=True)
+    event, values = warningWindow.read(close=False)
+    if event == sg.WINDOW_CLOSED:
+        warningWindow.close()
+
+def ConfirmDefault():
+    layoutOp = [[sg.Text("Confirm your default location",size=20)],
+              [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='_country_'),sg.Combo(values=[],enable_events=True,readonly=True,key='_city_',disabled=True,expand_x=True,size=(15,10))],
+              [sg.Button('Confirm',enable_events=True,key='Confirm')]]
+    windowOp = sg.Window('IPray',layoutOp,finalize=True)
+    while True:
+        event, values = windowOp.read(close=False)
+        if event == 'Exit' or event == sg.WIN_CLOSED:
+            break
+        if event =='_country_':
+            windowOp['_city_'].update(disabled=False)
+            if values['_country_'] == 'Indonesia':
+                windowOp['_city_'].update(values=loc.CityList[0])
+            elif values['_country_'] == 'United Kingdom':
+                windowOp['_city_'].update(values=loc.CityList[1])
+            elif values['_country_'] == 'Germany':
+                windowOp['_city_'].update(values=loc.CityList[2])
+        if event == 'Confirm':
+            if values['_city_'] == '' or values['_country_'] =='':
+                WarningPage()
+            else:
+                windowOp.close()
+                return [values['_country_'],values['_city_']]
+    return []
 def main():
     sg.theme("DarkAmber")
     menu = ['',['Author','About','Exit']]
     tooltip = 'IPray'
+    country = None
+    city=None
+    try:
+        fileLocation = open('fileLoc.txt','x')
+        country,city = ConfirmDefault()
+        fileLocation.write('{}:{}'.format(city,country))
+        fileLocation.close()
+    except FileExistsError:
+        fileLocation = open('fileLoc.txt','r')
+        ResLocation = fileLocation.read()
+        ResSplit = ResLocation.split(':')
+        city = ResSplit[0]
+        country = ResSplit[1]
+        fileLocation.close()
+
     #Layout in Windows's Frame
-    ScannerPrayTime=pt.pray_times('Surabaya','Indonesia')
-    layout = [[sg.Table(ScannerPrayTime,headings=['Name Time','Time'],key='-table-')],
+    ScannerPrayTime=pt.pray_times(city,country)
+    layout = [[sg.Text('Location : {}, {}'.format(city,country),key='location_tag')],
+              [sg.Table(ScannerPrayTime,headings=['Name Time','Time'],key='-table-')],
               [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
               [sg.Button('Sync',enable_events=True,key='Sync')]]
     #Window Class Instance
@@ -77,8 +124,12 @@ def main():
             window.start_thread(lambda: AdzanSoundThread(tray,adzan, ScannerPrayTime), ('-THREAD-', '-THEAD ENDED-'))
         if event == 'Exit':
             break
-        if event == 'Sync':
-            ScannerPrayTime=Sync(window,values, ScannerPrayTime)
+        if event == 'Sync' :
+            if values['city'] == '' or values['country'] =='':
+                WarningPage()
+                continue
+            ScannerPrayTime, city, country=Sync(window,values, ScannerPrayTime)
+            window['location_tag'].update('Location : {}, {}'.format(city,country))
         if event =='country':
             window['city'].update(disabled=False)
             if values['country'] == 'Indonesia':
