@@ -22,9 +22,11 @@ First clone my repository
 `pip install PyAudio`
 - If you wanna execute it in .exe file format you can use Auto-Py-To-Exe where you can found it in
 `pip install auto-py-to-exe`
-# This is the .exe format file, You can download and use it the software normally
-`https://github.com/ReaseRZ/IPray/releases/tag/v1.0.0`
-then run it with
+- Then run it with
 `py IPray.py`
+# .exe format file
+You can download it throught this link, and use it normally on your PC
+`https://github.com/ReaseRZ/IPray/releases/tag/v1.0.0`
+
 
 If you have any advice or idea to my project, you can email me on : `creszen.cpp@outlook.com`
