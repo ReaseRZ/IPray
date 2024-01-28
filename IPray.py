@@ -1,13 +1,13 @@
 import PySimpleGUI as sg
 import prayer_time as pt
+import location as loc
 from psgtray import SystemTray
 from datetime import datetime
 import wave
 import pyaudio
 import re
 
-city = None
-Location = None
+Sync = False
 
 def Author(windows:sg.Window):
     layout = [[sg.Text("Github : ReaseRZ | CReszen")],
@@ -21,14 +21,13 @@ def AboutWindows(windows:sg.Window):
               [sg.Text("Created with love By ResZ ©2024")]]
     event,values = sg.Window('About',layout,element_justification='center').read(close=True)
 
-def StillInDev(windows:sg.Window):
-    layout = [[sg.Text("Sorry This feature is still in development")],
-              [sg.Text("Current time is Indonesian prayer time only")],
-              [sg.Text("Be pleasure to wait this project, i'll work as fast as i can")]]
-    event,values = sg.Window('Warning !!!',layout,element_justification='center').read(close=True)
-
+def Sync(window:sg.Window,values):
+    city=str(values['city'])
+    country=str(values['country'])
+    window['-table-'].update(values=pt.pray_times(city,country))
+    
 def AdzanSoundThread(tray, adzan):
-    prayerTime = pt.pray_times()
+    prayerTime = []
     for name_time,time in prayerTime:
         tempTime = time
         FinalizeTime = re.sub("[(WIB)]","",tempTime)
@@ -52,16 +51,13 @@ def AdzanSoundThread(tray, adzan):
                 data = wf.readframes(1024)
             adzan[0]=True
     
-
-CityList = [['Surabaya','Semarang','Jakarta'],['London'],['Berlin']]
-CountryList = ['Indonesia','United Kingdom','Germany']
 def main():
     sg.theme("DarkAmber")
     menu = ['',['Author','About','Exit']]
     tooltip = 'IPray'
     #Layout in Windows's Frame
-    layout = [[sg.Table(pt.pray_times(),headings=['Name Time','Time'])],
-              [sg.Combo(CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
+    layout = [[sg.Table(pt.pray_times('Surabaya','Indonesia'),headings=['Name Time','Time'],key='-table-')],
+              [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
               [sg.Button('Sync',enable_events=True,key='Sync')]]
     #Window Class Instance
     window = sg.Window('IPray',layout,finalize=True,enable_close_attempted_event=True)
@@ -73,27 +69,23 @@ def main():
     #Update windows event(Interaction program and user)
     while True:
         event, values = window.read(timeout=1000)
-    
         if event == tray.key:
             event = values[event]
-
         if event == sg.TIMEOUT_EVENT and adzan[0]:
-            window.start_thread(lambda: AdzanSoundThread(tray,adzan), ('-THREAD-', '-THEAD ENDED-'))
-
+            #window.start_thread(lambda: AdzanSoundThread(tray,adzan), ('-THREAD-', '-THEAD ENDED-'))
+            continue
         if event == 'Exit':
             break
-
         if event == 'Sync':
-            StillInDev(window)
-
+            Sync(window,values)
         if event =='country':
             window['city'].update(disabled=False)
             if values['country'] == 'Indonesia':
-                window['city'].update(values=CityList[0])
+                window['city'].update(values=loc.CityList[0])
             elif values['country'] == 'United Kingdom':
-                window['city'].update(values=CityList[1])
+                window['city'].update(values=loc.CityList[1])
             elif values['country'] == 'Germany':
-                window['city'].update(values=CityList[2])
+                window['city'].update(values=loc.CityList[2])
         if event == sg.WIN_CLOSE_ATTEMPTED_EVENT:
             window.hide()
             tray.show_message('IPray','IPray is launching in the background')
