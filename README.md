@@ -1,7 +1,7 @@
 # IPray
 Prayer reminder for moslem that avoid smartphone use cause the distraction is too many or when you got deep focus on your computer and become unaware about the time is running so fast
 # Feature
-- Get know about your local prayer time (Only Indonesian is available, for other region will be in the next)
+- Get know about your local prayer time (Germany, United Kingdom, Indonesia is available, for other region will be in the next)
 - Run in the background (Using Dekstop System Tray)
 - Program will pop up in notification to remind you
 - It will play adzan sound automatically when Prayer time is coming
