@@ -1,14 +1,14 @@
 # IPray
 Prayer reminder for moslem that avoid smartphone use cause the distraction is too many or when you got deep focus on your computer and become unaware about the time is running so fast
 # Feature
-- Get know about your local prayer time (Germany, United Kingdom, Indonesia is available, for other region will be in the next)
+- Get know about your local prayer time (Germany, United Kingdom, Indonesia are available, for other region will be in the next)
 - Run in the background (Using Dekstop System Tray)
 - Program will pop up in notification to remind you
 - It will play adzan sound automatically when Prayer time is coming
 ## Pop up In notification to always remind you
 ![image](https://github.com/ReaseRZ/IPray/assets/88366703/62f299be-3d00-42f3-b570-889a46909df4)
 ## Minimalist GUI
-![image](https://github.com/ReaseRZ/IPray/assets/88366703/45610621-36fb-48e8-8344-2d359bc5b7a0)
+![image](https://github.com/ReaseRZ/IPray/assets/88366703/cbc5693f-be74-4f24-96db-c885306547a5)
 ## Don't forget, close the program properly
 ![image](https://github.com/ReaseRZ/IPray/assets/88366703/a6fa3c7b-1330-486c-87de-6a160b0ec1e4)
 # How To Run
