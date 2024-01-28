@@ -21,16 +21,18 @@ def AboutWindows(windows:sg.Window):
               [sg.Text("Created with love By ResZ ©2024")]]
     event,values = sg.Window('About',layout,element_justification='center').read(close=True)
 
-def Sync(window:sg.Window,values):
+def Sync(window:sg.Window,values,ScannerPrayTime):
     city=str(values['city'])
     country=str(values['country'])
-    window['-table-'].update(values=pt.pray_times(city,country))
+    ScannerPrayTime=pt.pray_times(city,country)
+    window['-table-'].update(values=ScannerPrayTime)
+    return ScannerPrayTime
     
-def AdzanSoundThread(tray, adzan):
-    prayerTime = []
+def AdzanSoundThread(tray, adzan, ScannerPrayTime):
+    prayerTime = ScannerPrayTime
     for name_time,time in prayerTime:
         tempTime = time
-        FinalizeTime = re.sub("[(WIB)]","",tempTime)
+        FinalizeTime = tempTime[0:6]
         SeparatorTime = FinalizeTime.split(':')
         if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]):
             adzan[0] = False
@@ -44,7 +46,6 @@ def AdzanSoundThread(tray, adzan):
             
             # Read data in audio
             data = wf.readframes(1024)
-
             # Play the sound by writing the audio data to the stream
             while data != '':
                 stream.write(data)
@@ -56,7 +57,8 @@ def main():
     menu = ['',['Author','About','Exit']]
     tooltip = 'IPray'
     #Layout in Windows's Frame
-    layout = [[sg.Table(pt.pray_times('Surabaya','Indonesia'),headings=['Name Time','Time'],key='-table-')],
+    ScannerPrayTime=pt.pray_times('Surabaya','Indonesia')
+    layout = [[sg.Table(ScannerPrayTime,headings=['Name Time','Time'],key='-table-')],
               [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
               [sg.Button('Sync',enable_events=True,key='Sync')]]
     #Window Class Instance
@@ -72,12 +74,11 @@ def main():
         if event == tray.key:
             event = values[event]
         if event == sg.TIMEOUT_EVENT and adzan[0]:
-            #window.start_thread(lambda: AdzanSoundThread(tray,adzan), ('-THREAD-', '-THEAD ENDED-'))
-            continue
+            window.start_thread(lambda: AdzanSoundThread(tray,adzan, ScannerPrayTime), ('-THREAD-', '-THEAD ENDED-'))
         if event == 'Exit':
             break
         if event == 'Sync':
-            Sync(window,values)
+            ScannerPrayTime=Sync(window,values, ScannerPrayTime)
         if event =='country':
             window['city'].update(disabled=False)
             if values['country'] == 'Indonesia':
