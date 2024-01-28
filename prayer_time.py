@@ -1,4 +1,5 @@
 import requests
+import IPray as IP
 from datetime import date
 
 today = date.today()
@@ -10,7 +11,10 @@ def refresh_data_api(city:str,country:str):
     #print("status code :{}".format(response.status_code))
     if response.status_code == 200:
         return data
-    return
+    else:
+        IP.WarningPage('Required good internet connection')
+        return
+        
 
 def get_data_pray_time(city:str,country:str):
     data = refresh_data_api(city,country)

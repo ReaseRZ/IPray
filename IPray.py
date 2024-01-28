@@ -5,9 +5,6 @@ from psgtray import SystemTray
 from datetime import datetime
 import wave
 import pyaudio
-import re
-
-Sync = False
 
 def Author(windows:sg.Window):
     layout = [[sg.Text("Github : ReaseRZ | CReszen")],
@@ -27,15 +24,29 @@ def Sync(window:sg.Window,values,ScannerPrayTime):
     ScannerPrayTime=pt.pray_times(city,country)
     window['-table-'].update(values=ScannerPrayTime)
     return (ScannerPrayTime,city,country)
+
+def WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,flag_number:int,cooldown:int):
+    alarmMinuteToday = None
+    if flag[flag_number]:
+        if datetime.today().minute > int(SeparatorTime[1]) and datetime.today().hour <= int(SeparatorTime[0]):
+            alarmMinuteToday = int(SeparatorTime[1])+60-datetime.today().minute
+        else:
+            alarmMinuteToday = int(SeparatorTime[1])-datetime.today().minute
+        if alarmMinuteToday <= cooldown and datetime.today().hour <= int(SeparatorTime[0]):
+            tray.show_message('Time for {} is {} minute(s) more'.format(name_time,alarmMinuteToday),'I come for remind you')
+            flag[flag_number]=False
     
-def AdzanSoundThread(tray, adzan, ScannerPrayTime):
+def AdzanSoundThread(tray, flag, ScannerPrayTime):
     prayerTime = ScannerPrayTime
     for name_time,time in prayerTime:
         tempTime = time
         FinalizeTime = tempTime[0:6]
         SeparatorTime = FinalizeTime.split(':')
+        WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,1,15)
+        WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,2,30)
+        WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,3,60)
         if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]):
-            adzan[0] = False
+            flag[0] = False
             tray.show_message('Time for praying : {}'.format(name_time),'Lets go to pray, hurry up, Adzan has begun')
             wf = wave.open('assets/mecca_56_22.wav')
             pAudio = pyaudio.PyAudio()
@@ -50,10 +61,15 @@ def AdzanSoundThread(tray, adzan, ScannerPrayTime):
             while data != '':
                 stream.write(data)
                 data = wf.readframes(1024)
-            adzan[0]=True
+            stream.close()
+            pAudio.terminate()
+            flag[0]=True
+            flag[1]=True
+            flag[2]=True
+            flag[3]=True
 
-def WarningPage():
-    LayoutWarning = [[sg.Text("Please enter format properly")]]
+def WarningPage(text:str):
+    LayoutWarning = [[sg.Text(text)]]
     warningWindow = sg.Window('Warning',LayoutWarning,finalize=True)
     event, values = warningWindow.read(close=False)
     if event == sg.WINDOW_CLOSED:
@@ -78,7 +94,7 @@ def ConfirmDefault():
                 windowOp['_city_'].update(values=loc.CityList[2])
         if event == 'Confirm':
             if values['_city_'] == '' or values['_country_'] =='':
-                WarningPage()
+                WarningPage('Please enter format properly')
             else:
                 windowOp.close()
                 return [values['_country_'],values['_city_']]
@@ -114,19 +130,19 @@ def main():
     #Dekstop Tray Icon
     tray = SystemTray(menu,single_click_events=False,window=window, tooltip=tooltip, icon=sg.DEFAULT_BASE64_ICON)
     tray.show_message('IPray','IPray is launching in the background')
-    adzan = [True]
+    flag = [True,True,True,True]
     #Update windows event(Interaction program and user)
     while True:
         event, values = window.read(timeout=1000)
         if event == tray.key:
             event = values[event]
-        if event == sg.TIMEOUT_EVENT and adzan[0]:
-            window.start_thread(lambda: AdzanSoundThread(tray,adzan, ScannerPrayTime), ('-THREAD-', '-THEAD ENDED-'))
+        if event == sg.TIMEOUT_EVENT and flag[0]:
+            window.start_thread(lambda: AdzanSoundThread(tray,flag, ScannerPrayTime), ('-THREAD-', '-THEAD ENDED-'))
         if event == 'Exit':
             break
         if event == 'Sync' :
             if values['city'] == '' or values['country'] =='':
-                WarningPage()
+                WarningPage('Take your time for filling up the location')
                 continue
             ScannerPrayTime, city, country=Sync(window,values, ScannerPrayTime)
             window['location_tag'].update('Location : {}, {}'.format(city,country))
