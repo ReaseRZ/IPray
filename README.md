@@ -20,6 +20,8 @@ First clone my repository
 `pip install PySimpleGui`
 - If you don't install PyAudio yet. You can enter this command in your terminal
 `pip install PyAudio`
+If you don't install Psgtray yet. You can enter this command in your terminal
+`pip install psgtray`
 - If you wanna execute it in .exe file format you can use Auto-Py-To-Exe where you can found it in
 `pip install auto-py-to-exe`
 - Then run it with
