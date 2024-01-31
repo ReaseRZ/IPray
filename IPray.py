@@ -5,7 +5,6 @@ from psgtray import SystemTray
 from datetime import datetime
 import wave
 import pyaudio
-import gc
 
 def Author(windows:sg.Window):
     layout = [[sg.Text("Github : ReaseRZ | CReszen")],
@@ -28,21 +27,21 @@ def Sync(window:sg.Window,values,ScannerPrayTime):
 
 #Pop Up for remind user every (@Parameter : cooldown<int>)
 def WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,flag_number:int,cooldown:int):
-    alarmMinuteToday = None
+    alarmMinuteToday = 0
     if flag[flag_number]:
-        if datetime.today().minute > int(SeparatorTime[1]) and datetime.today().hour <= int(SeparatorTime[0]):
+        if datetime.today().minute > int(SeparatorTime[1]) and int(SeparatorTime[0])-datetime.today().hour == 1:
             alarmMinuteToday = int(SeparatorTime[1])+60-datetime.today().minute
-        else:
+        if datetime.today().minute < int(SeparatorTime[1]) and int(SeparatorTime[0])-datetime.today().hour == 1:
+            alarmMinuteToday = int(SeparatorTime[1])+60-datetime.today().minute
+        if datetime.today().minute < int(SeparatorTime[1]) and int(SeparatorTime[0])-datetime.today().hour == 0:
             alarmMinuteToday = int(SeparatorTime[1])-datetime.today().minute
-        if alarmMinuteToday <= cooldown and datetime.today().hour <= int(SeparatorTime[0]):
-            tray.show_message('Time for {} is {} minute(s) more'.format(name_time,alarmMinuteToday),'I come for remind you')
+        if int(alarmMinuteToday) <= int(cooldown) and datetime.today().hour <= int(SeparatorTime[0]):
+            tray.show_message('Time for {} is {} minute(s) more'.format(name_time,alarmMinuteToday),'I am coming for remind you')
             flag[flag_number]=False
+    del alarmMinuteToday
     
 #Play adzan sound when time is coming
-def AdzanSoundThread(tray, flag, SeparatorTime,name_time):
-    #WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,1,15)
-    #WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,2,45)
-
+def AdzanSoundThread(tray, flag ,name_time):
     flag[0] = False
     tray.show_message('Time for praying : {}'.format(name_time),'Lets go to pray, hurry up, Adzan has begun')
     wf = wave.open('assets/mecca_56_22.wav')
@@ -121,7 +120,6 @@ def main():
     #Additional Object
     namePrayerTime = []
     timePrayer = []
-
     ScannerPrayTime=pt.pray_times(city,country)
     for name_time,time in ScannerPrayTime:
         if name_time == 'Fajr' or name_time == 'Dhuhr' or name_time == 'Asr' or name_time == 'Maghrib' or name_time =='Isha':
@@ -136,10 +134,10 @@ def main():
               [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
               [sg.Button('Sync',enable_events=True,key='Sync')]]
     #Window Class Instance
-    window = sg.Window('IPray',layout,finalize=True,enable_close_attempted_event=True)
+    window = sg.Window('IPray',layout,finalize=True,enable_close_attempted_event=True,icon=r'moon.ico')
     window.hide()
     #Dekstop Tray Icon
-    tray = SystemTray(menu,single_click_events=False,window=window, tooltip=tooltip, icon=sg.DEFAULT_BASE64_ICON)
+    tray = SystemTray(menu,single_click_events=False,window=window, tooltip=tooltip, icon=r'moon.png')
     tray.show_message('IPray','IPray is launching in the background')
     flag = [True,True,True,True]
     #Update windows event(Interaction program and user)
@@ -150,8 +148,12 @@ def main():
         if event == sg.TIMEOUT_EVENT:
             for i in range (0,len(namePrayerTime)):
                 SeparatorTime = timePrayer[i].split(':')
-                if datetime.today().minute == SeparatorTime[1] and datetime.today().hour == SeparatorTime[0] and flag[0]:
-                    window.start_thread(lambda: AdzanSoundThread(tray,flag,timePrayer[i], namePrayerTime[i]), ('-THREAD-', '-THEAD ENDED-'))
+                WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,1,15)
+                WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,2,45)
+                print(SeparatorTime)
+                if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]) and flag[0]:
+                    print("Heas")
+                    window.start_thread(lambda: AdzanSoundThread(tray,flag,namePrayerTime[i]), ('-THREAD-', '-THEAD ENDED-'))
                 SeparatorTime.clear()
         if event == 'Exit':
             break
@@ -161,6 +163,7 @@ def main():
                 continue
             namePrayerTime.clear()
             timePrayer.clear()
+            ScannerPrayTime.clear()
             ScannerPrayTime, city, country=Sync(window,values, ScannerPrayTime)
             window['location_tag'].update('Location : {}, {}'.format(city,country))
             for name_time,time in ScannerPrayTime:
