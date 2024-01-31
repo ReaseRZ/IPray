@@ -6,9 +6,9 @@ Prayer reminder for moslem that avoid smartphone use cause the distraction is to
 - Program will pop up in notification to remind you
 - It will play adzan sound automatically when Prayer time is coming
 ## Pop up In notification to always remind you
-![image](https://github.com/ReaseRZ/IPray/assets/88366703/62f299be-3d00-42f3-b570-889a46909df4)
+![image](https://github.com/ReaseRZ/IPray/assets/88366703/829033a5-e7f6-4bbc-b4c7-fb57feca2e42)
 ## Minimalist GUI
-![image](https://github.com/ReaseRZ/IPray/assets/88366703/cbc5693f-be74-4f24-96db-c885306547a5)
+![image](https://github.com/ReaseRZ/IPray/assets/88366703/12993780-1925-4f3e-97ea-fd050c0b35b8)
 ## Don't forget, close the program properly
 ![image](https://github.com/ReaseRZ/IPray/assets/88366703/a6fa3c7b-1330-486c-87de-6a160b0ec1e4)
 # How To Run
@@ -26,7 +26,8 @@ First clone my repository
 `py IPray.py`
 # .exe format file
 You can download it throught this link, and use it normally on your PC
-[IPray v1.0.0](https://github.com/ReaseRZ/IPray/releases/tag/v1.0.0)
+
+[IPray v1.1.0](https://github.com/ReaseRZ/IPray/releases/tag/v1.1.0)
 
 
 If you have any advice or idea to my project, you can email me on : `creszen.cpp@outlook.com`
