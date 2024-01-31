@@ -5,6 +5,7 @@ from psgtray import SystemTray
 from datetime import datetime
 import wave
 import pyaudio
+import gc
 
 def Author(windows:sg.Window):
     layout = [[sg.Text("Github : ReaseRZ | CReszen")],
@@ -25,6 +26,7 @@ def Sync(window:sg.Window,values,ScannerPrayTime):
     window['-table-'].update(values=ScannerPrayTime)
     return (ScannerPrayTime,city,country)
 
+#Pop Up for remind user every (@Parameter : cooldown<int>)
 def WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,flag_number:int,cooldown:int):
     alarmMinuteToday = None
     if flag[flag_number]:
@@ -36,38 +38,34 @@ def WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,flag_number:int,c
             tray.show_message('Time for {} is {} minute(s) more'.format(name_time,alarmMinuteToday),'I come for remind you')
             flag[flag_number]=False
     
-def AdzanSoundThread(tray, flag, ScannerPrayTime):
-    prayerTime = ScannerPrayTime
-    for name_time,time in prayerTime:
-        tempTime = time
-        FinalizeTime = tempTime[0:6]
-        SeparatorTime = FinalizeTime.split(':')
-        WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,1,15)
-        WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,2,30)
-        WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,3,60)
-        if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]):
-            flag[0] = False
-            tray.show_message('Time for praying : {}'.format(name_time),'Lets go to pray, hurry up, Adzan has begun')
-            wf = wave.open('assets/mecca_56_22.wav')
-            pAudio = pyaudio.PyAudio()
-            stream = pAudio.open(format=pAudio.get_format_from_width(wf.getsampwidth()),
-                            channels=wf.getnchannels(),
-                            rate=wf.getframerate(),
-                            output=True)
-            
-            # Read data in audio
-            data = wf.readframes(1024)
-            # Play the sound by writing the audio data to the stream
-            while data != '':
-                stream.write(data)
-                data = wf.readframes(1024)
-            stream.close()
-            pAudio.terminate()
-            flag[0]=True
-            flag[1]=True
-            flag[2]=True
-            flag[3]=True
+#Play adzan sound when time is coming
+def AdzanSoundThread(tray, flag, SeparatorTime,name_time):
+    #WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,1,15)
+    #WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,2,45)
 
+    flag[0] = False
+    tray.show_message('Time for praying : {}'.format(name_time),'Lets go to pray, hurry up, Adzan has begun')
+    wf = wave.open('assets/mecca_56_22.wav')
+    pAudio = pyaudio.PyAudio()
+    stream = pAudio.open(format=pAudio.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+    
+    # Read data in audio
+    data = wf.readframes(512)
+    # Play the sound by writing the audio data to the stream
+    while data != '':
+        stream.write(data)
+        data = wf.readframes(512)
+    stream.close()
+    pAudio.terminate()
+    flag[0]=True
+    flag[1]=True
+    flag[2]=True
+    flag[3]=True
+
+#Window for alert user
 def WarningPage(text:str):
     LayoutWarning = [[sg.Text(text)]]
     warningWindow = sg.Window('Warning',LayoutWarning,finalize=True)
@@ -75,6 +73,7 @@ def WarningPage(text:str):
     if event == sg.WINDOW_CLOSED:
         warningWindow.close()
 
+#Function for confirm location Input
 def ConfirmDefault():
     layoutOp = [[sg.Text("Confirm your default location",size=20)],
               [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='_country_'),sg.Combo(values=[],enable_events=True,readonly=True,key='_city_',disabled=True,expand_x=True,size=(15,10))],
@@ -105,6 +104,7 @@ def main():
     tooltip = 'IPray'
     country = None
     city=None
+    #Create File for Default Location
     try:
         fileLocation = open('fileLoc.txt','x')
         country,city = ConfirmDefault()
@@ -117,9 +117,20 @@ def main():
         city = ResSplit[0]
         country = ResSplit[1]
         fileLocation.close()
+    
+    #Additional Object
+    namePrayerTime = []
+    timePrayer = []
+
+    ScannerPrayTime=pt.pray_times(city,country)
+    for name_time,time in ScannerPrayTime:
+        if name_time == 'Fajr' or name_time == 'Dhuhr' or name_time == 'Asr' or name_time == 'Maghrib' or name_time =='Isha':
+            namePrayerTime.append(name_time)
+            timePrayer.append(time)
+    for i in range (0,len(timePrayer)):
+        timePrayer[i] = timePrayer[i][0:6]
 
     #Layout in Windows's Frame
-    ScannerPrayTime=pt.pray_times(city,country)
     layout = [[sg.Text('Location : {}, {}'.format(city,country),key='location_tag')],
               [sg.Table(ScannerPrayTime,headings=['Name Time','Time'],key='-table-')],
               [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
@@ -133,19 +144,32 @@ def main():
     flag = [True,True,True,True]
     #Update windows event(Interaction program and user)
     while True:
-        event, values = window.read(timeout=1000)
+        event, values = window.read(timeout=3000)
         if event == tray.key:
             event = values[event]
-        if event == sg.TIMEOUT_EVENT and flag[0]:
-            window.start_thread(lambda: AdzanSoundThread(tray,flag, ScannerPrayTime), ('-THREAD-', '-THEAD ENDED-'))
+        if event == sg.TIMEOUT_EVENT:
+            for i in range (0,len(namePrayerTime)):
+                SeparatorTime = timePrayer[i].split(':')
+                if datetime.today().minute == SeparatorTime[1] and datetime.today().hour == SeparatorTime[0] and flag[0]:
+                    window.start_thread(lambda: AdzanSoundThread(tray,flag,timePrayer[i], namePrayerTime[i]), ('-THREAD-', '-THEAD ENDED-'))
+                SeparatorTime.clear()
         if event == 'Exit':
             break
         if event == 'Sync' :
             if values['city'] == '' or values['country'] =='':
                 WarningPage('Take your time for filling up the location')
                 continue
+            namePrayerTime.clear()
+            timePrayer.clear()
             ScannerPrayTime, city, country=Sync(window,values, ScannerPrayTime)
             window['location_tag'].update('Location : {}, {}'.format(city,country))
+            for name_time,time in ScannerPrayTime:
+                if name_time == 'Fajr' or name_time == 'Dhuhr' or name_time == 'Asr' or name_time == 'Maghrib' or name_time =='Isha':
+                    namePrayerTime.append(name_time)
+                    timePrayer.append(time)
+            for i in range (0,len(timePrayer)):
+                timePrayer[i] = timePrayer[i][0:6]
+
         if event =='country':
             window['city'].update(disabled=False)
             if values['country'] == 'Indonesia':
