@@ -35,9 +35,9 @@ def WarningForPrayTimeIsNear(name_time,tray,flag,SeparatorTime,flag_number:int,c
             alarmMinuteToday = int(SeparatorTime[1])+60-datetime.today().minute
         if datetime.today().minute < int(SeparatorTime[1]) and int(SeparatorTime[0])-datetime.today().hour == 0:
             alarmMinuteToday = int(SeparatorTime[1])-datetime.today().minute
-        if int(alarmMinuteToday) <= int(cooldown) and datetime.today().hour <= int(SeparatorTime[0]):
-            tray.show_message('Time for {} is {} minute(s) more'.format(name_time,alarmMinuteToday),'I am coming for remind you')
-            flag[flag_number]=False
+    if int(alarmMinuteToday) <= int(cooldown) and alarmMinuteToday != 0 :
+        tray.show_message('Time for {} is {} minute(s) more'.format(name_time,alarmMinuteToday),'I am coming for remind you')
+        flag[flag_number]=False
     del alarmMinuteToday
     
 #Play adzan sound when time is coming
@@ -67,7 +67,7 @@ def AdzanSoundThread(tray, flag ,name_time):
 #Window for alert user
 def WarningPage(text:str):
     LayoutWarning = [[sg.Text(text)]]
-    warningWindow = sg.Window('Warning',LayoutWarning,finalize=True)
+    warningWindow = sg.Window('Warning',LayoutWarning,finalize=True, icon='moon.ico')
     event, values = warningWindow.read(close=False)
     if event == sg.WINDOW_CLOSED:
         warningWindow.close()
@@ -77,7 +77,7 @@ def ConfirmDefault():
     layoutOp = [[sg.Text("Confirm your default location",size=20)],
               [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='_country_'),sg.Combo(values=[],enable_events=True,readonly=True,key='_city_',disabled=True,expand_x=True,size=(15,10))],
               [sg.Button('Confirm',enable_events=True,key='Confirm')]]
-    windowOp = sg.Window('IPray',layoutOp,finalize=True)
+    windowOp = sg.Window('IPray',layoutOp,finalize=True, icon='moon.ico')
     while True:
         event, values = windowOp.read(close=False)
         if event == 'Exit' or event == sg.WIN_CLOSED:
@@ -149,15 +149,15 @@ def main():
             for i in range (0,len(namePrayerTime)):
                 SeparatorTime = timePrayer[i].split(':')
                 WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,1,15)
-                WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,2,45)
-                print(SeparatorTime)
+                WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,2,60)
                 if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]) and flag[0]:
-                    print("Heas")
                     window.start_thread(lambda: AdzanSoundThread(tray,flag,namePrayerTime[i]), ('-THREAD-', '-THEAD ENDED-'))
                 SeparatorTime.clear()
         if event == 'Exit':
             break
         if event == 'Sync' :
+            flag[1]=True
+            flag[2]=True
             if values['city'] == '' or values['country'] =='':
                 WarningPage('Take your time for filling up the location')
                 continue
