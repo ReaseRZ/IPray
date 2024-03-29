@@ -83,7 +83,7 @@ def ConfirmDefault():
             break
         if event =='_country_':
             windowOp['_city_'].update(disabled=False)
-            for i in range (0,len(loc.CountryList)-1):
+            for i in range (0,len(loc.CountryList)):
                 if values['_country_'] == loc.CountryList[i]:
                     windowOp['_city_'].update(values=loc.CityList[i])
            
@@ -174,7 +174,7 @@ def main():
 
         if event =='country':
             window['city'].update(disabled=False)
-            for i in range (0,len(loc.CountryList)-1):
+            for i in range (0,len(loc.CountryList)):
                 if values['country'] == loc.CountryList[i]:
                     window['city'].update(values=loc.CityList[i])
         if event == sg.WIN_CLOSE_ATTEMPTED_EVENT:
