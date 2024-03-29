@@ -4,6 +4,7 @@ import location as loc
 from psgtray import SystemTray
 from datetime import datetime
 import wave
+import threading
 import pyaudio
 
 def Author(windows:sg.Window):
@@ -52,11 +53,9 @@ def AdzanSoundThread(tray, flag ,name_time):
                     output=True)
     
     # Read data in audio
-    data = wf.readframes(512)
-    # Play the sound by writing the audio data to the stream
-    while data != '':
+    while len(data := wf.readframes(512)):  
         stream.write(data)
-        data = wf.readframes(512)
+
     stream.close()
     pAudio.terminate()
     flag[0]=True
@@ -84,12 +83,10 @@ def ConfirmDefault():
             break
         if event =='_country_':
             windowOp['_city_'].update(disabled=False)
-            if values['_country_'] == 'Indonesia':
-                windowOp['_city_'].update(values=loc.CityList[0])
-            elif values['_country_'] == 'United Kingdom':
-                windowOp['_city_'].update(values=loc.CityList[1])
-            elif values['_country_'] == 'Germany':
-                windowOp['_city_'].update(values=loc.CityList[2])
+            for i in range (0,len(loc.CountryList)-1):
+                if values['_country_'] == loc.CountryList[i]:
+                    windowOp['_city_'].update(values=loc.CityList[i])
+           
         if event == 'Confirm':
             if values['_city_'] == '' or values['_country_'] =='':
                 WarningPage('Please enter format properly')
@@ -142,7 +139,7 @@ def main():
     flag = [True,True,True,True]
     #Update windows event(Interaction program and user)
     while True:
-        event, values = window.read(timeout=3000)
+        event, values = window.read(timeout=500)
         if event == tray.key:
             event = values[event]
         if event == sg.TIMEOUT_EVENT:
@@ -151,7 +148,9 @@ def main():
                 WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,1,15)
                 WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,2,60)
                 if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]) and flag[0]:
-                    window.start_thread(lambda: AdzanSoundThread(tray,flag,namePrayerTime[i]), ('-THREAD-', '-THEAD ENDED-'))
+                    thread = threading.Thread(target=AdzanSoundThread,args=(tray,flag,namePrayerTime[i]),daemon=True)
+                    thread.start()
+                    #window.start_thread(lambda: AdzanSoundThread(tray,flag,namePrayerTime[i]), ('-THREAD-', '-THEAD ENDED-'))
                 SeparatorTime.clear()
         if event == 'Exit':
             break
@@ -175,12 +174,9 @@ def main():
 
         if event =='country':
             window['city'].update(disabled=False)
-            if values['country'] == 'Indonesia':
-                window['city'].update(values=loc.CityList[0])
-            elif values['country'] == 'United Kingdom':
-                window['city'].update(values=loc.CityList[1])
-            elif values['country'] == 'Germany':
-                window['city'].update(values=loc.CityList[2])
+            for i in range (0,len(loc.CountryList)-1):
+                if values['country'] == loc.CountryList[i]:
+                    window['city'].update(values=loc.CityList[i])
         if event == sg.WIN_CLOSE_ATTEMPTED_EVENT:
             window.hide()
             tray.show_message('IPray','IPray is launching in the background')
