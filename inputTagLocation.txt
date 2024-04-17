@@ -1,0 +1,4 @@
+ Indonesia|Surabaya,Semarang,Jakarta,Medan,Pontianak,Jayapura,Padang
+ United Kingdom|London,Liverpool,Oxford
+ Germany|Berlin,Stuttgart,Dortmund
+ Japan|Tokyo,Osaka,Hokaido,Kyoto,Okinawa
