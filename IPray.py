@@ -9,8 +9,8 @@ import pyaudio
 
 def Author(windows:sg.Window):
     layout = [[sg.Text("Github : ReaseRZ | CReszen")],
-              [sg.Text("LinkedIn : Reggy Samius")],
-              [sg.Text("Codewars : CReszen")],
+              [sg.Text("Facebook : Reggy Samius")],
+              [sg.Text("Twitter : Creszen1")],
               [sg.Text("Email me on : creszen.cpp@outlook.com")]]
     event,values = sg.Window('Author',layout,element_justification='center').read(close=True)
 
@@ -22,7 +22,10 @@ def AboutWindows(windows:sg.Window):
 def Sync(window:sg.Window,values,ScannerPrayTime):
     city=str(values['city'])
     country=str(values['country'])
-    ScannerPrayTime=pt.pray_times(city,country)
+    try:
+        ScannerPrayTime=pt.pray_times(city,country)
+    except:
+        WarningPage('Required good internet connection')
     window['-table-'].update(values=ScannerPrayTime)
     return (ScannerPrayTime,city,country)
 
@@ -74,7 +77,7 @@ def WarningPage(text:str):
 #Function for confirm location Input
 def ConfirmDefault():
     layoutOp = [[sg.Text("Confirm your default location",size=20)],
-              [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='_country_'),sg.Combo(values=[],enable_events=True,readonly=True,key='_city_',disabled=True,expand_x=True,size=(15,10))],
+              [sg.Combo(loc.CountryList(),enable_events=True,readonly=True,key='_country_'),sg.Combo(values=[],enable_events=True,readonly=True,key='_city_',disabled=True,expand_x=True,size=(15,10))],
               [sg.Button('Confirm',enable_events=True,key='Confirm')]]
     windowOp = sg.Window('IPray',layoutOp,finalize=True, icon='moon.ico')
     while True:
@@ -83,9 +86,9 @@ def ConfirmDefault():
             break
         if event =='_country_':
             windowOp['_city_'].update(disabled=False)
-            for i in range (0,len(loc.CountryList)):
-                if values['_country_'] == loc.CountryList[i]:
-                    windowOp['_city_'].update(values=loc.CityList[i])
+            for i in range (0,len(loc.CountryList())):
+                if values['_country_'] == loc.CountryList()[i]:
+                    windowOp['_city_'].update(values=loc.CityList()[i])
            
         if event == 'Confirm':
             if values['_city_'] == '' or values['_country_'] =='':
@@ -104,7 +107,7 @@ def main():
     try:
         fileLocation = open('fileLoc.txt','x')
         country,city = ConfirmDefault()
-        fileLocation.write('{}:{}'.format(city,country))
+        fileLocation.write('{}:{}'.format(city,country)) 
         fileLocation.close()
     except FileExistsError:
         fileLocation = open('fileLoc.txt','r')
@@ -117,7 +120,11 @@ def main():
     #Additional Object
     namePrayerTime = []
     timePrayer = []
-    ScannerPrayTime=pt.pray_times(city,country)
+    try:
+        ScannerPrayTime=pt.pray_times(city,country)
+    except:
+        WarningPage('Required good internet connection !')
+        return
     for name_time,time in ScannerPrayTime:
         if name_time == 'Fajr' or name_time == 'Dhuhr' or name_time == 'Asr' or name_time == 'Maghrib' or name_time =='Isha':
             namePrayerTime.append(name_time)
@@ -128,7 +135,7 @@ def main():
     #Layout in Windows's Frame
     layout = [[sg.Text('Location : {}, {}'.format(city,country),key='location_tag')],
               [sg.Table(ScannerPrayTime,headings=['Name Time','Time'],key='-table-')],
-              [sg.Combo(loc.CountryList,enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
+              [sg.Combo(loc.CountryList(),enable_events=True,readonly=True,key='country'),sg.Combo(values=[],enable_events=True,readonly=True,key='city',disabled=True,expand_x=True)],
               [sg.Button('Sync',enable_events=True,key='Sync')]]
     #Window Class Instance
     window = sg.Window('IPray',layout,finalize=True,enable_close_attempted_event=True,icon=r'moon.ico')
@@ -146,7 +153,7 @@ def main():
             for i in range (0,len(namePrayerTime)):
                 SeparatorTime = timePrayer[i].split(':')
                 WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,1,15)
-                WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,2,60)
+                WarningForPrayTimeIsNear(namePrayerTime[i],tray,flag,SeparatorTime,2,45)
                 if datetime.today().minute == int(SeparatorTime[1]) and datetime.today().hour == int(SeparatorTime[0]) and flag[0]:
                     thread = threading.Thread(target=AdzanSoundThread,args=(tray,flag,namePrayerTime[i]),daemon=True)
                     thread.start()
@@ -174,9 +181,9 @@ def main():
 
         if event =='country':
             window['city'].update(disabled=False)
-            for i in range (0,len(loc.CountryList)):
-                if values['country'] == loc.CountryList[i]:
-                    window['city'].update(values=loc.CityList[i])
+            for i in range (0,len(loc.CountryList())):
+                if values['country'] == loc.CountryList()[i]:
+                    window['city'].update(values=loc.CityList()[i])
         if event == sg.WIN_CLOSE_ATTEMPTED_EVENT:
             window.hide()
             tray.show_message('IPray','IPray is launching in the background')
