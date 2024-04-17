@@ -1,7 +1,7 @@
 # IPray
 Prayer reminder for moslem that avoid smartphone use cause the distraction is too many or when you got deep focus on your computer and become unaware about the time is running so fast
 # Feature
-- Get know about your local prayer time, You can set it up in location.py by yourself, then the program will automatically sync the pray time
+- Get know about your local prayer time, You can set it up in InputTagLocation.txt by yourself, then the program will automatically sync the pray time
 - Run in the background (Using Dekstop System Tray)
 - Program will pop up in notification to remind you
 - It will play adzan sound automatically when Prayer time is coming
@@ -27,9 +27,5 @@ First clone my repository
 - Then run it with
 `py IPray.py`
 # .exe format file
-You can download it throught this link, and use it normally on your PC
-
-[IPray v1.1.0](https://github.com/ReaseRZ/IPray/releases/tag/v1.1.0)
-
-
+You can download it throught this link, and use it normally on your PC : [IPray v1.3.1](https://github.com/ReaseRZ/IPray/releases/tag/v1.3.1)
 If you have any advice or idea to my project, you can email me on : `creszen.cpp@outlook.com`
