@@ -1,7 +1,18 @@
-#You can add your location by yourself format 2D Array with same index CountryList[i]==CityList[i]
-#Example CountryList = ['Japan'] you add the CityList as CityList=[['Tokyo','Osaka','Hokaido','Kyoto','Okinawa']]
-CityList = [['Surabaya','Semarang','Jakarta','Medan','Pontianak','Jayapura','Padang'],
-            ['London','Liverpool','Oxford'],
-            ['Berlin','Stuttgart','Dortmund'],
-            ['Tokyo','Osaka','Hokaido','Kyoto','Okinawa']]
-CountryList = ['Indonesia','United Kingdom','Germany','Japan']
+def CityList():
+    CityList = []
+    text = open("inputTagLocation.txt",'r')
+    for eachLine in text:
+        containerC = eachLine.split('|')
+        CCTemp = []
+        for eachCity in containerC[1].split(','):
+            CCTemp.append(eachCity)
+        CityList.append(CCTemp)
+    return CityList
+
+def CountryList():
+    CountryList = []
+    text = open("inputTagLocation.txt",'r')
+    for eachLine in text:
+        containerC = eachLine.split('|')
+        CountryList.append(containerC[0])
+    return CountryList
